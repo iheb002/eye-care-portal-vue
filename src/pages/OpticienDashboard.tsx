@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../store/store';
 import { logout } from '../store/authSlice';
@@ -18,11 +18,16 @@ import {
   Bell,
   User
 } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import ProductsTable from '../components/ProductsTable';
+import ClientsTable from '../components/ClientsTable';
+import OrdonnancesTable from '../components/OrdonnancesTable';
 
 const OpticienDashboard = () => {
   const { user, isAuthenticated } = useSelector((state: RootState) => state.auth);
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const [activeSection, setActiveSection] = useState('dashboard');
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
@@ -34,17 +39,17 @@ const OpticienDashboard = () => {
   };
 
   const sidebarItems = [
-    { name: 'Dashboard', icon: BarChart3, active: true },
-    { name: 'Clients', icon: Users, count: 42 },
-    { name: 'Ordonnances', icon: FileText },
-    { name: 'Rendez-vous', icon: Calendar },
-    { name: 'Produits', icon: Package },
-    { name: 'Commandes', icon: ShoppingCart },
-    { name: 'Achats', icon: CreditCard },
-    { name: 'Ventes', icon: DollarSign },
-    { name: 'Factures', icon: FileText },
-    { name: 'Caisse', icon: CreditCard },
-    { name: 'Stock', icon: Package },
+    { id: 'dashboard', name: 'Dashboard', icon: BarChart3, active: activeSection === 'dashboard' },
+    { id: 'clients', name: 'Clients', icon: Users, count: 42 },
+    { id: 'ordonnances', name: 'Ordonnances', icon: FileText },
+    { id: 'rendez-vous', name: 'Rendez-vous', icon: Calendar },
+    { id: 'produits', name: 'Produits', icon: Package },
+    { id: 'commandes', name: 'Commandes', icon: ShoppingCart },
+    { id: 'achats', name: 'Achats', icon: CreditCard },
+    { id: 'ventes', name: 'Ventes', icon: DollarSign },
+    { id: 'factures', name: 'Factures', icon: FileText },
+    { id: 'caisse', name: 'Caisse', icon: CreditCard },
+    { id: 'stock', name: 'Stock', icon: Package },
   ];
 
   const statsCards = [
@@ -53,6 +58,73 @@ const OpticienDashboard = () => {
     { title: 'Ventes', value: '245', bgColor: 'bg-purple-500' },
     { title: 'Ordonnances', value: '27', bgColor: 'bg-orange-500' },
   ];
+
+  const renderDashboardContent = () => (
+    <div>
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        {statsCards.map((stat, index) => (
+          <div key={index} className="bg-white rounded-lg shadow p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">{stat.title}</p>
+                <p className="text-3xl font-bold text-gray-900 mt-2">{stat.value}</p>
+              </div>
+              <div className={`p-3 rounded-lg ${stat.bgColor}`}>
+                <Eye className="h-6 w-6 text-white" />
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Charts and Tables Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Chart Placeholder */}
+        <div className="bg-white rounded-lg shadow p-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">
+            Évolution des ventes
+          </h3>
+          <div className="h-64 bg-gray-100 rounded-lg flex items-center justify-center">
+            <div className="text-center">
+              <BarChart3 className="h-12 w-12 text-gray-400 mx-auto mb-2" />
+              <p className="text-gray-500">Graphique à venir</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Recent Activities */}
+        <div className="bg-white rounded-lg shadow p-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">
+            Activités récentes
+          </h3>
+          <div className="space-y-4">
+            <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+              <Users className="h-5 w-5 text-blue-600" />
+              <div>
+                <p className="font-medium">Nouveau client ajouté</p>
+                <p className="text-sm text-gray-500">Il y a 2 heures</p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+              <Calendar className="h-5 w-5 text-green-600" />
+              <div>
+                <p className="font-medium">RDV confirmé</p>
+                <p className="text-sm text-gray-500">Il y a 4 heures</p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+              <FileText className="h-5 w-5 text-purple-600" />
+              <div>
+                <p className="font-medium">Ordonnance créée</p>
+                <p className="text-sm text-gray-500">Il y a 6 heures</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-gray-100 flex">
@@ -76,6 +148,7 @@ const OpticienDashboard = () => {
           {sidebarItems.map((item, index) => (
             <div
               key={index}
+              onClick={() => setActiveSection(item.id)}
               className={`px-6 py-3 flex items-center justify-between hover:bg-gray-700 cursor-pointer ${
                 item.active ? 'bg-blue-600' : ''
               }`}
@@ -99,7 +172,9 @@ const OpticienDashboard = () => {
         {/* Header */}
         <header className="bg-white shadow-sm border-b px-6 py-4">
           <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
+            <h1 className="text-2xl font-bold text-gray-900">
+              {sidebarItems.find(item => item.id === activeSection)?.name || 'Dashboard'}
+            </h1>
             
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-2">
@@ -126,68 +201,20 @@ const OpticienDashboard = () => {
 
         {/* Dashboard Content */}
         <div className="p-6">
-          {/* Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            {statsCards.map((stat, index) => (
-              <div key={index} className="bg-white rounded-lg shadow p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">{stat.title}</p>
-                    <p className="text-3xl font-bold text-gray-900 mt-2">{stat.value}</p>
-                  </div>
-                  <div className={`p-3 rounded-lg ${stat.bgColor}`}>
-                    <Eye className="h-6 w-6 text-white" />
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Charts and Tables Section */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Chart Placeholder */}
-            <div className="bg-white rounded-lg shadow p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                Évolution des ventes
+          {activeSection === 'dashboard' && renderDashboardContent()}
+          {activeSection === 'clients' && <ClientsTable />}
+          {activeSection === 'ordonnances' && <OrdonnancesTable />}
+          {activeSection === 'produits' && <ProductsTable />}
+          {(activeSection !== 'dashboard' && activeSection !== 'clients' && activeSection !== 'ordonnances' && activeSection !== 'produits') && (
+            <div className="bg-white rounded-lg shadow p-8 text-center">
+              <h3 className="text-xl font-semibold text-gray-900 mb-4">
+                Section en développement
               </h3>
-              <div className="h-64 bg-gray-100 rounded-lg flex items-center justify-center">
-                <div className="text-center">
-                  <BarChart3 className="h-12 w-12 text-gray-400 mx-auto mb-2" />
-                  <p className="text-gray-500">Graphique à venir</p>
-                </div>
-              </div>
+              <p className="text-gray-600">
+                Cette section sera bientôt disponible.
+              </p>
             </div>
-
-            {/* Recent Activities */}
-            <div className="bg-white rounded-lg shadow p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                Activités récentes
-              </h3>
-              <div className="space-y-4">
-                <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
-                  <Users className="h-5 w-5 text-blue-600" />
-                  <div>
-                    <p className="font-medium">Nouveau client ajouté</p>
-                    <p className="text-sm text-gray-500">Il y a 2 heures</p>
-                  </div>
-                </div>
-                <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
-                  <Calendar className="h-5 w-5 text-green-600" />
-                  <div>
-                    <p className="font-medium">RDV confirmé</p>
-                    <p className="text-sm text-gray-500">Il y a 4 heures</p>
-                  </div>
-                </div>
-                <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
-                  <FileText className="h-5 w-5 text-purple-600" />
-                  <div>
-                    <p className="font-medium">Ordonnance créée</p>
-                    <p className="text-sm text-gray-500">Il y a 6 heures</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+          )}
         </div>
       </div>
     </div>
