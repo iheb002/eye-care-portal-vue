@@ -10,6 +10,7 @@ interface User {
   cin: string;
   boutique?: string;
   adresse?: string;
+  role: 'opticien' | 'admin';
 }
 
 interface AuthState {
@@ -18,11 +19,30 @@ interface AuthState {
   loading: boolean;
 }
 
-const initialState: AuthState = {
-  user: null,
-  isAuthenticated: false,
-  loading: false,
+// Charger l'état depuis localStorage
+const loadAuthState = (): AuthState => {
+  try {
+    const savedAuth = localStorage.getItem('authState');
+    if (savedAuth) {
+      const parsed = JSON.parse(savedAuth);
+      return {
+        user: parsed.user,
+        isAuthenticated: parsed.isAuthenticated,
+        loading: false,
+      };
+    }
+  } catch (error) {
+    console.error('Erreur lors du chargement de l\'état d\'authentification:', error);
+  }
+  
+  return {
+    user: null,
+    isAuthenticated: false,
+    loading: false,
+  };
 };
+
+const initialState: AuthState = loadAuthState();
 
 const authSlice = createSlice({
   name: 'auth',
@@ -35,16 +55,24 @@ const authSlice = createSlice({
       state.user = action.payload;
       state.isAuthenticated = true;
       state.loading = false;
+      
+      // Sauvegarder dans localStorage
+      localStorage.setItem('authState', JSON.stringify({
+        user: action.payload,
+        isAuthenticated: true,
+      }));
     },
     loginFailure: (state) => {
       state.loading = false;
       state.user = null;
       state.isAuthenticated = false;
+      localStorage.removeItem('authState');
     },
     logout: (state) => {
       state.user = null;
       state.isAuthenticated = false;
       state.loading = false;
+      localStorage.removeItem('authState');
     },
     signupStart: (state) => {
       state.loading = true;
@@ -53,6 +81,12 @@ const authSlice = createSlice({
       state.user = action.payload;
       state.isAuthenticated = true;
       state.loading = false;
+      
+      // Sauvegarder dans localStorage
+      localStorage.setItem('authState', JSON.stringify({
+        user: action.payload,
+        isAuthenticated: true,
+      }));
     },
     signupFailure: (state) => {
       state.loading = false;

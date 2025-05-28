@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, ArrowLeft } from 'lucide-react';
@@ -26,25 +25,36 @@ const Login = () => {
     e.preventDefault();
     dispatch(loginStart());
 
-    // Simulation d'une connexion (remplacez par votre logique d'authentification)
+    // Simulation d'une connexion avec rôles
     setTimeout(() => {
       if (formData.email && formData.password) {
+        // Simulation de différents rôles selon l'email
+        const isAdmin = formData.email.includes('admin');
+        
         const user = {
           id: '1',
-          nom: 'Dupont',
-          prenom: 'Jean',
+          nom: isAdmin ? 'Admin' : 'Dupont',
+          prenom: isAdmin ? 'Super' : 'Jean',
           email: formData.email,
           telephone: '+33123456789',
           cin: 'AB123456',
-          boutique: 'Optique Centrale',
-          adresse: '123 Rue de la Vision, Paris',
+          boutique: isAdmin ? undefined : 'Optique Centrale',
+          adresse: isAdmin ? undefined : '123 Rue de la Vision, Paris',
+          role: isAdmin ? 'admin' as const : 'opticien' as const,
         };
+        
         dispatch(loginSuccess(user));
         toast({
           title: "Connexion réussie",
-          description: "Bienvenue dans votre espace OptiVision",
+          description: `Bienvenue ${user.prenom}`,
         });
-        navigate('/dashboard');
+        
+        // Redirection selon le rôle
+        if (isAdmin) {
+          navigate('/admin');
+        } else {
+          navigate('/dashboard');
+        }
       } else {
         dispatch(loginFailure());
         toast({
@@ -70,6 +80,9 @@ const Login = () => {
             </Link>
             <h2 className="text-3xl font-bold text-gray-900">Connexion</h2>
             <p className="text-gray-600 mt-2">Accédez à votre espace OptiVision</p>
+            <p className="text-sm text-gray-500 mt-2">
+              Test: admin@test.com pour admin, autre email pour opticien
+            </p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">

@@ -7,7 +7,7 @@ import { Link, useNavigate } from 'react-router-dom';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const { isAuthenticated } = useSelector((state: RootState) => state.auth);
+  const { isAuthenticated, user } = useSelector((state: RootState) => state.auth);
   const navigate = useNavigate();
 
   const scrollToSection = (sectionId: string) => {
@@ -16,6 +16,14 @@ const Navbar = () => {
       element.scrollIntoView({ behavior: 'smooth' });
     }
     setIsOpen(false);
+  };
+
+  const handleDashboardClick = () => {
+    if (user?.role === 'admin') {
+      navigate('/admin');
+    } else {
+      navigate('/dashboard');
+    }
   };
 
   const navLinks = [
@@ -51,12 +59,17 @@ const Navbar = () => {
           {/* Auth Buttons */}
           <div className="hidden md:flex items-center space-x-4">
             {isAuthenticated ? (
-              <Link
-                to="/dashboard"
-                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors duration-200"
-              >
-                Dashboard
-              </Link>
+              <div className="flex items-center space-x-3">
+                <span className="text-gray-600">
+                  {user?.prenom} ({user?.role})
+                </span>
+                <button
+                  onClick={handleDashboardClick}
+                  className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors duration-200"
+                >
+                  {user?.role === 'admin' ? 'Admin Panel' : 'Dashboard'}
+                </button>
+              </div>
             ) : (
               <>
                 <Link
@@ -101,13 +114,20 @@ const Navbar = () => {
               ))}
               <div className="pt-3 space-y-2">
                 {isAuthenticated ? (
-                  <Link
-                    to="/dashboard"
-                    className="block bg-blue-600 text-white px-3 py-2 rounded-lg text-center"
-                    onClick={() => setIsOpen(false)}
-                  >
-                    Dashboard
-                  </Link>
+                  <div className="space-y-2">
+                    <div className="px-3 py-2 text-gray-600">
+                      {user?.prenom} ({user?.role})
+                    </div>
+                    <button
+                      onClick={() => {
+                        handleDashboardClick();
+                        setIsOpen(false);
+                      }}
+                      className="block bg-blue-600 text-white px-3 py-2 rounded-lg text-center w-full"
+                    >
+                      {user?.role === 'admin' ? 'Admin Panel' : 'Dashboard'}
+                    </button>
+                  </div>
                 ) : (
                   <>
                     <Link
