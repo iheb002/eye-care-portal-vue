@@ -1,221 +1,250 @@
 
 import React, { useState } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
-import { RootState } from '../store/store';
-import { logout } from '../store/authSlice';
-import { Navigate, useNavigate } from 'react-router-dom';
 import { 
-  Eye, 
   Users, 
-  Calendar, 
-  ShoppingCart, 
   Package, 
   FileText, 
-  DollarSign,
-  CreditCard,
-  BarChart3,
-  LogOut,
-  Bell,
-  User
+  BarChart3, 
+  Settings, 
+  Menu,
+  X,
+  Home,
+  LogOut
 } from 'lucide-react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import ProductsTable from '../components/ProductsTable';
-import ClientsTable from '../components/ClientsTable';
-import OrdonnancesTable from '../components/OrdonnancesTable';
+import { Button } from '@/components/ui/button';
+import ProductsTable from '@/components/ProductsTable';
+import ClientsTable from '@/components/ClientsTable';
+import OrdonnancesTable from '@/components/OrdonnancesTable';
 
 const OpticienDashboard = () => {
-  const { user, isAuthenticated } = useSelector((state: RootState) => state.auth);
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
   const [activeSection, setActiveSection] = useState('dashboard');
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
-  }
+  const menuItems = [
+    { id: 'dashboard', label: 'Tableau de bord', icon: Home },
+    { id: 'clients', label: 'Clients', icon: Users },
+    { id: 'products', label: 'Produits', icon: Package },
+    { id: 'ordonnances', label: 'Ordonnances', icon: FileText },
+    { id: 'analytics', label: 'Analytique', icon: BarChart3 },
+    { id: 'settings', label: 'Paramètres', icon: Settings },
+  ];
 
-  const handleLogout = () => {
-    dispatch(logout());
-    navigate('/');
+  const renderContent = () => {
+    switch (activeSection) {
+      case 'clients':
+        return <ClientsTable />;
+      case 'products':
+        return <ProductsTable />;
+      case 'ordonnances':
+        return <OrdonnancesTable />;
+      case 'analytics':
+        return (
+          <div className="bg-white rounded-lg shadow p-6">
+            <h2 className="text-2xl font-bold mb-4">Analytique</h2>
+            <p className="text-gray-600">Section analytique en cours de développement...</p>
+          </div>
+        );
+      case 'settings':
+        return (
+          <div className="bg-white rounded-lg shadow p-6">
+            <h2 className="text-2xl font-bold mb-4">Paramètres</h2>
+            <p className="text-gray-600">Section paramètres en cours de développement...</p>
+          </div>
+        );
+      default:
+        return (
+          <div className="space-y-6">
+            {/* Dashboard Overview */}
+            <div className="bg-white rounded-lg shadow p-6">
+              <h2 className="text-2xl font-bold mb-6">Tableau de bord Opticien</h2>
+              
+              {/* Stats Cards */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-blue-600 text-sm font-medium">Total Clients</p>
+                      <p className="text-2xl font-bold text-blue-900">1,234</p>
+                    </div>
+                    <Users className="h-8 w-8 text-blue-600" />
+                  </div>
+                </div>
+                
+                <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-green-600 text-sm font-medium">Produits</p>
+                      <p className="text-2xl font-bold text-green-900">856</p>
+                    </div>
+                    <Package className="h-8 w-8 text-green-600" />
+                  </div>
+                </div>
+                
+                <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-yellow-600 text-sm font-medium">Ordonnances</p>
+                      <p className="text-2xl font-bold text-yellow-900">342</p>
+                    </div>
+                    <FileText className="h-8 w-8 text-yellow-600" />
+                  </div>
+                </div>
+                
+                <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-purple-600 text-sm font-medium">Ventes du mois</p>
+                      <p className="text-2xl font-bold text-purple-900">€12,845</p>
+                    </div>
+                    <BarChart3 className="h-8 w-8 text-purple-600" />
+                  </div>
+                </div>
+              </div>
+              
+              {/* Quick Actions */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <Button 
+                  onClick={() => setActiveSection('clients')}
+                  className="h-16 text-left justify-start bg-blue-600 hover:bg-blue-700"
+                >
+                  <Users className="mr-3 h-5 w-5" />
+                  <div>
+                    <div className="font-medium">Gérer les Clients</div>
+                    <div className="text-xs opacity-80">Ajouter, modifier, supprimer</div>
+                  </div>
+                </Button>
+                
+                <Button 
+                  onClick={() => setActiveSection('products')}
+                  className="h-16 text-left justify-start bg-green-600 hover:bg-green-700"
+                >
+                  <Package className="mr-3 h-5 w-5" />
+                  <div>
+                    <div className="font-medium">Gérer les Produits</div>
+                    <div className="text-xs opacity-80">Inventaire et catalogue</div>
+                  </div>
+                </Button>
+                
+                <Button 
+                  onClick={() => setActiveSection('ordonnances')}
+                  className="h-16 text-left justify-start bg-yellow-600 hover:bg-yellow-700"
+                >
+                  <FileText className="mr-3 h-5 w-5" />
+                  <div>
+                    <div className="font-medium">Ordonnances</div>
+                    <div className="text-xs opacity-80">Gérer les prescriptions</div>
+                  </div>
+                </Button>
+              </div>
+            </div>
+          </div>
+        );
+    }
   };
 
-  const sidebarItems = [
-    { id: 'dashboard', name: 'Dashboard', icon: BarChart3, active: activeSection === 'dashboard' },
-    { id: 'clients', name: 'Clients', icon: Users, count: 42 },
-    { id: 'ordonnances', name: 'Ordonnances', icon: FileText },
-    { id: 'rendez-vous', name: 'Rendez-vous', icon: Calendar },
-    { id: 'produits', name: 'Produits', icon: Package },
-    { id: 'commandes', name: 'Commandes', icon: ShoppingCart },
-    { id: 'achats', name: 'Achats', icon: CreditCard },
-    { id: 'ventes', name: 'Ventes', icon: DollarSign },
-    { id: 'factures', name: 'Factures', icon: FileText },
-    { id: 'caisse', name: 'Caisse', icon: CreditCard },
-    { id: 'stock', name: 'Stock', icon: Package },
-  ];
-
-  const statsCards = [
-    { title: 'Clients', value: '42', bgColor: 'bg-blue-500' },
-    { title: 'Rendez-vous', value: '18', bgColor: 'bg-green-500' },
-    { title: 'Ventes', value: '245', bgColor: 'bg-purple-500' },
-    { title: 'Ordonnances', value: '27', bgColor: 'bg-orange-500' },
-  ];
-
-  const renderDashboardContent = () => (
-    <div>
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        {statsCards.map((stat, index) => (
-          <div key={index} className="bg-white rounded-lg shadow p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">{stat.title}</p>
-                <p className="text-3xl font-bold text-gray-900 mt-2">{stat.value}</p>
-              </div>
-              <div className={`p-3 rounded-lg ${stat.bgColor}`}>
-                <Eye className="h-6 w-6 text-white" />
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Charts and Tables Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Chart Placeholder */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">
-            Évolution des ventes
-          </h3>
-          <div className="h-64 bg-gray-100 rounded-lg flex items-center justify-center">
-            <div className="text-center">
-              <BarChart3 className="h-12 w-12 text-gray-400 mx-auto mb-2" />
-              <p className="text-gray-500">Graphique à venir</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Recent Activities */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">
-            Activités récentes
-          </h3>
-          <div className="space-y-4">
-            <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
-              <Users className="h-5 w-5 text-blue-600" />
-              <div>
-                <p className="font-medium">Nouveau client ajouté</p>
-                <p className="text-sm text-gray-500">Il y a 2 heures</p>
-              </div>
-            </div>
-            <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
-              <Calendar className="h-5 w-5 text-green-600" />
-              <div>
-                <p className="font-medium">RDV confirmé</p>
-                <p className="text-sm text-gray-500">Il y a 4 heures</p>
-              </div>
-            </div>
-            <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
-              <FileText className="h-5 w-5 text-purple-600" />
-              <div>
-                <p className="font-medium">Ordonnance créée</p>
-                <p className="text-sm text-gray-500">Il y a 6 heures</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-
   return (
-    <div className="min-h-screen bg-gray-100 flex">
-      {/* Sidebar */}
-      <div className="w-64 bg-gray-800 text-white fixed h-full">
-        {/* Profile Section */}
-        <div className="p-6 border-b border-gray-700">
-          <div className="flex items-center space-x-3">
-            <div className="w-12 h-12 bg-gray-600 rounded-full flex items-center justify-center">
-              <User className="h-6 w-6" />
-            </div>
-            <div>
-              <h3 className="font-semibold">{user?.prenom}</h3>
-              <p className="text-sm text-gray-400">Opticien</p>
-            </div>
-          </div>
-        </div>
+    <div className="min-h-screen bg-gray-50 flex">
+      {/* Sidebar Overlay for Mobile */}
+      {sidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
 
-        {/* Navigation */}
-        <nav className="mt-6">
-          {sidebarItems.map((item, index) => (
-            <div
-              key={index}
-              onClick={() => setActiveSection(item.id)}
-              className={`px-6 py-3 flex items-center justify-between hover:bg-gray-700 cursor-pointer ${
-                item.active ? 'bg-blue-600' : ''
-              }`}
-            >
-              <div className="flex items-center space-x-3">
-                <item.icon className="h-5 w-5" />
-                <span>{item.name}</span>
-              </div>
-              {item.count && (
-                <span className="bg-gray-600 text-xs px-2 py-1 rounded-full">
-                  {item.count}
-                </span>
-              )}
-            </div>
-          ))}
+      {/* Sidebar */}
+      <div className={`
+        fixed lg:static inset-y-0 left-0 z-50
+        w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out
+        ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+      `}>
+        <div className="flex items-center justify-between p-4 border-b">
+          <h1 className="text-xl font-bold text-gray-800">OptiPanel</h1>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setSidebarOpen(false)}
+            className="lg:hidden"
+          >
+            <X className="h-5 w-5" />
+          </Button>
+        </div>
+        
+        <nav className="mt-6 px-4">
+          <div className="space-y-2">
+            {menuItems.map((item) => {
+              const Icon = item.icon;
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => {
+                    setActiveSection(item.id);
+                    setSidebarOpen(false);
+                  }}
+                  className={`
+                    w-full flex items-center px-4 py-3 text-left rounded-lg transition-colors
+                    ${activeSection === item.id 
+                      ? 'bg-blue-100 text-blue-700 border-r-2 border-blue-700' 
+                      : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                    }
+                  `}
+                >
+                  <Icon className="mr-3 h-5 w-5" />
+                  <span className="font-medium">{item.label}</span>
+                </button>
+              );
+            })}
+          </div>
         </nav>
+        
+        {/* Logout Button */}
+        <div className="absolute bottom-4 left-4 right-4">
+          <Button
+            variant="outline"
+            className="w-full flex items-center justify-center"
+            onClick={() => window.location.href = '/login'}
+          >
+            <LogOut className="mr-2 h-4 w-4" />
+            Déconnexion
+          </Button>
+        </div>
       </div>
 
       {/* Main Content */}
-      <div className="ml-64 flex-1">
-        {/* Header */}
-        <header className="bg-white shadow-sm border-b px-6 py-4">
+      <div className="flex-1 flex flex-col min-w-0">
+        {/* Top Bar */}
+        <header className="bg-white shadow-sm border-b px-4 py-3 lg:px-6">
           <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold text-gray-900">
-              {sidebarItems.find(item => item.id === activeSection)?.name || 'Dashboard'}
-            </h1>
+            <div className="flex items-center">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setSidebarOpen(true)}
+                className="lg:hidden mr-2"
+              >
+                <Menu className="h-5 w-5" />
+              </Button>
+              <h2 className="text-lg font-semibold text-gray-800 capitalize">
+                {activeSection === 'dashboard' ? 'Tableau de bord' : 
+                 menuItems.find(item => item.id === activeSection)?.label}
+              </h2>
+            </div>
             
             <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-2">
-                <Bell className="h-5 w-5 text-gray-500" />
-                <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full">3</span>
+              <div className="hidden sm:block text-sm text-gray-600">
+                Bienvenue, Opticien
               </div>
-              <div className="flex items-center space-x-2">
-                <Bell className="h-5 w-5 text-gray-500" />
-                <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full">5</span>
-              </div>
-              <div className="flex items-center space-x-3">
-                <span className="text-gray-700">{user?.email}</span>
-                <button
-                  onClick={handleLogout}
-                  className="flex items-center space-x-2 text-gray-600 hover:text-red-600 transition-colors"
-                >
-                  <LogOut className="h-5 w-5" />
-                  <span>Déconnexion</span>
-                </button>
+              <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
+                <span className="text-white text-sm font-medium">O</span>
               </div>
             </div>
           </div>
         </header>
 
-        {/* Dashboard Content */}
-        <div className="p-6">
-          {activeSection === 'dashboard' && renderDashboardContent()}
-          {activeSection === 'clients' && <ClientsTable />}
-          {activeSection === 'ordonnances' && <OrdonnancesTable />}
-          {activeSection === 'produits' && <ProductsTable />}
-          {(activeSection !== 'dashboard' && activeSection !== 'clients' && activeSection !== 'ordonnances' && activeSection !== 'produits') && (
-            <div className="bg-white rounded-lg shadow p-8 text-center">
-              <h3 className="text-xl font-semibold text-gray-900 mb-4">
-                Section en développement
-              </h3>
-              <p className="text-gray-600">
-                Cette section sera bientôt disponible.
-              </p>
-            </div>
-          )}
-        </div>
+        {/* Page Content */}
+        <main className="flex-1 p-4 lg:p-6 overflow-auto">
+          {renderContent()}
+        </main>
       </div>
     </div>
   );

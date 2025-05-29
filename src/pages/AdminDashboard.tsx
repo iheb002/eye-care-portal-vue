@@ -1,204 +1,261 @@
 
-import React from 'react';
-import { useSelector, useDispatch } from 'react-redux';
-import { RootState } from '../store/store';
-import { logout } from '../store/authSlice';
-import { Navigate, useNavigate } from 'react-router-dom';
+import React, { useState } from 'react';
 import { 
   Users, 
-  Eye, 
-  Settings, 
+  Package, 
+  FileText, 
   BarChart3, 
-  Shield, 
-  Database,
-  Activity,
+  Settings, 
+  Menu,
+  X,
+  Home,
   LogOut,
-  Bell,
-  User,
-  Store
+  UserCheck,
+  TrendingUp,
+  Shield
 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import ProductsTable from '@/components/ProductsTable';
+import ClientsTable from '@/components/ClientsTable';
+import OrdonnancesTable from '@/components/OrdonnancesTable';
 
 const AdminDashboard = () => {
-  const { user, isAuthenticated } = useSelector((state: RootState) => state.auth);
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
+  const [activeSection, setActiveSection] = useState('dashboard');
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  if (!isAuthenticated || user?.role !== 'admin') {
-    return <Navigate to="/login" replace />;
-  }
+  const menuItems = [
+    { id: 'dashboard', label: 'Tableau de bord', icon: Home },
+    { id: 'users', label: 'Utilisateurs', icon: UserCheck },
+    { id: 'clients', label: 'Clients', icon: Users },
+    { id: 'products', label: 'Produits', icon: Package },
+    { id: 'ordonnances', label: 'Ordonnances', icon: FileText },
+    { id: 'analytics', label: 'Analytique', icon: BarChart3 },
+    { id: 'settings', label: 'Paramètres', icon: Settings },
+  ];
 
-  const handleLogout = () => {
-    dispatch(logout());
-    navigate('/');
+  const renderContent = () => {
+    switch (activeSection) {
+      case 'users':
+        return (
+          <div className="bg-white rounded-lg shadow p-6">
+            <h2 className="text-2xl font-bold mb-4">Gestion des Utilisateurs</h2>
+            <p className="text-gray-600">Section gestion des utilisateurs en cours de développement...</p>
+          </div>
+        );
+      case 'clients':
+        return <ClientsTable />;
+      case 'products':
+        return <ProductsTable />;
+      case 'ordonnances':
+        return <OrdonnancesTable />;
+      case 'analytics':
+        return (
+          <div className="bg-white rounded-lg shadow p-6">
+            <h2 className="text-2xl font-bold mb-4">Analytique Avancée</h2>
+            <p className="text-gray-600">Section analytique avancée en cours de développement...</p>
+          </div>
+        );
+      case 'settings':
+        return (
+          <div className="bg-white rounded-lg shadow p-6">
+            <h2 className="text-2xl font-bold mb-4">Paramètres Système</h2>
+            <p className="text-gray-600">Section paramètres système en cours de développement...</p>
+          </div>
+        );
+      default:
+        return (
+          <div className="space-y-6">
+            {/* Admin Dashboard Overview */}
+            <div className="bg-white rounded-lg shadow p-6">
+              <h2 className="text-2xl font-bold mb-6">Tableau de bord Administrateur</h2>
+              
+              {/* Admin Stats Cards */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-blue-600 text-sm font-medium">Total Utilisateurs</p>
+                      <p className="text-2xl font-bold text-blue-900">45</p>
+                    </div>
+                    <UserCheck className="h-8 w-8 text-blue-600" />
+                  </div>
+                </div>
+                
+                <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-green-600 text-sm font-medium">Revenus Totaux</p>
+                      <p className="text-2xl font-bold text-green-900">€54,234</p>
+                    </div>
+                    <TrendingUp className="h-8 w-8 text-green-600" />
+                  </div>
+                </div>
+                
+                <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-yellow-600 text-sm font-medium">Opticiens Actifs</p>
+                      <p className="text-2xl font-bold text-yellow-900">12</p>
+                    </div>
+                    <Shield className="h-8 w-8 text-yellow-600" />
+                  </div>
+                </div>
+                
+                <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-purple-600 text-sm font-medium">Commandes ce mois</p>
+                      <p className="text-2xl font-bold text-purple-900">1,847</p>
+                    </div>
+                    <BarChart3 className="h-8 w-8 text-purple-600" />
+                  </div>
+                </div>
+              </div>
+              
+              {/* Admin Quick Actions */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <Button 
+                  onClick={() => setActiveSection('users')}
+                  className="h-16 text-left justify-start bg-blue-600 hover:bg-blue-700"
+                >
+                  <UserCheck className="mr-3 h-5 w-5" />
+                  <div>
+                    <div className="font-medium">Gérer les Utilisateurs</div>
+                    <div className="text-xs opacity-80">Opticiens et administrateurs</div>
+                  </div>
+                </Button>
+                
+                <Button 
+                  onClick={() => setActiveSection('analytics')}
+                  className="h-16 text-left justify-start bg-green-600 hover:bg-green-700"
+                >
+                  <BarChart3 className="mr-3 h-5 w-5" />
+                  <div>
+                    <div className="font-medium">Analytique Avancée</div>
+                    <div className="text-xs opacity-80">Rapports et statistiques</div>
+                  </div>
+                </Button>
+                
+                <Button 
+                  onClick={() => setActiveSection('settings')}
+                  className="h-16 text-left justify-start bg-purple-600 hover:bg-purple-700"
+                >
+                  <Settings className="mr-3 h-5 w-5" />
+                  <div>
+                    <div className="font-medium">Paramètres Système</div>
+                    <div className="text-xs opacity-80">Configuration globale</div>
+                  </div>
+                </Button>
+              </div>
+            </div>
+          </div>
+        );
+    }
   };
 
-  const adminStats = [
-    { title: 'Opticiens inscrits', value: '45', icon: Users, color: 'text-blue-600' },
-    { title: 'Boutiques actives', value: '32', icon: Store, color: 'text-green-600' },
-    { title: 'Examens total', value: '1,248', icon: Eye, color: 'text-purple-600' },
-    { title: 'Revenus total', value: '€125,400', icon: BarChart3, color: 'text-orange-600' },
-  ];
-
-  const recentOpticiens = [
-    { nom: 'Dr. Martin', boutique: 'Optique Centre', status: 'Actif', inscrit: '2024-01-15' },
-    { nom: 'Dr. Dubois', boutique: 'Vision Plus', status: 'Actif', inscrit: '2024-01-10' },
-    { nom: 'Dr. Laurent', boutique: 'Optic 2000', status: 'Inactif', inscrit: '2024-01-05' },
-  ];
-
   return (
-    <div className="min-h-screen bg-gray-100">
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-3">
-              <Shield className="h-8 w-8 text-red-600" />
-              <h1 className="text-2xl font-bold text-gray-900">Administration OptiVision</h1>
+    <div className="min-h-screen bg-gray-50 flex">
+      {/* Sidebar Overlay for Mobile */}
+      {sidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
+      {/* Admin Sidebar */}
+      <div className={`
+        fixed lg:static inset-y-0 left-0 z-50
+        w-64 bg-gradient-to-b from-purple-900 to-purple-800 shadow-lg transform transition-transform duration-300 ease-in-out
+        ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+      `}>
+        <div className="flex items-center justify-between p-4 border-b border-purple-700">
+          <h1 className="text-xl font-bold text-white">AdminPanel</h1>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setSidebarOpen(false)}
+            className="lg:hidden text-white hover:bg-purple-700"
+          >
+            <X className="h-5 w-5" />
+          </Button>
+        </div>
+        
+        <nav className="mt-6 px-4">
+          <div className="space-y-2">
+            {menuItems.map((item) => {
+              const Icon = item.icon;
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => {
+                    setActiveSection(item.id);
+                    setSidebarOpen(false);
+                  }}
+                  className={`
+                    w-full flex items-center px-4 py-3 text-left rounded-lg transition-colors
+                    ${activeSection === item.id 
+                      ? 'bg-purple-700 text-white border-r-2 border-purple-300' 
+                      : 'text-purple-200 hover:bg-purple-700 hover:text-white'
+                    }
+                  `}
+                >
+                  <Icon className="mr-3 h-5 w-5" />
+                  <span className="font-medium">{item.label}</span>
+                </button>
+              );
+            })}
+          </div>
+        </nav>
+        
+        {/* Admin Logout Button */}
+        <div className="absolute bottom-4 left-4 right-4">
+          <Button
+            variant="outline"
+            className="w-full flex items-center justify-center bg-transparent border-purple-300 text-purple-200 hover:bg-purple-700 hover:text-white"
+            onClick={() => window.location.href = '/login'}
+          >
+            <LogOut className="mr-2 h-4 w-4" />
+            Déconnexion
+          </Button>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col min-w-0">
+        {/* Top Bar */}
+        <header className="bg-white shadow-sm border-b px-4 py-3 lg:px-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setSidebarOpen(true)}
+                className="lg:hidden mr-2"
+              >
+                <Menu className="h-5 w-5" />
+              </Button>
+              <h2 className="text-lg font-semibold text-gray-800 capitalize">
+                {activeSection === 'dashboard' ? 'Tableau de bord Admin' : 
+                 menuItems.find(item => item.id === activeSection)?.label}
+              </h2>
             </div>
             
             <div className="flex items-center space-x-4">
-              <Bell className="h-5 w-5 text-gray-500" />
-              <div className="flex items-center space-x-3">
-                <User className="h-6 w-6 text-gray-500" />
-                <span className="text-gray-700">{user?.prenom} {user?.nom}</span>
-                <button
-                  onClick={handleLogout}
-                  className="flex items-center space-x-2 text-gray-600 hover:text-red-600 transition-colors"
-                >
-                  <LogOut className="h-5 w-5" />
-                  <span>Déconnexion</span>
-                </button>
+              <div className="hidden sm:block text-sm text-gray-600">
+                Bienvenue, Administrateur
+              </div>
+              <div className="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center">
+                <span className="text-white text-sm font-medium">A</span>
               </div>
             </div>
           </div>
-        </div>
-      </header>
+        </header>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Welcome Section */}
-        <div className="mb-8">
-          <h2 className="text-3xl font-bold text-gray-900 mb-2">
-            Tableau de bord administrateur
-          </h2>
-          <p className="text-gray-600">
-            Gérez l'ensemble de la plateforme OptiVision
-          </p>
-        </div>
-
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          {adminStats.map((stat, index) => (
-            <div key={index} className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">{stat.title}</p>
-                  <p className="text-2xl font-bold text-gray-900 mt-1">{stat.value}</p>
-                </div>
-                <div className={`p-3 rounded-lg bg-gray-100`}>
-                  <stat.icon className={`h-6 w-6 ${stat.color}`} />
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Main Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Admin Actions */}
-          <div className="lg:col-span-2">
-            <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100 mb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Actions administrateur</h3>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                <button className="flex flex-col items-center p-4 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors">
-                  <Users className="h-8 w-8 text-blue-600 mb-2" />
-                  <span className="text-sm font-medium text-gray-900">Gérer opticiens</span>
-                </button>
-                <button className="flex flex-col items-center p-4 bg-green-50 rounded-lg hover:bg-green-100 transition-colors">
-                  <Store className="h-8 w-8 text-green-600 mb-2" />
-                  <span className="text-sm font-medium text-gray-900">Boutiques</span>
-                </button>
-                <button className="flex flex-col items-center p-4 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors">
-                  <BarChart3 className="h-8 w-8 text-purple-600 mb-2" />
-                  <span className="text-sm font-medium text-gray-900">Statistiques</span>
-                </button>
-                <button className="flex flex-col items-center p-4 bg-yellow-50 rounded-lg hover:bg-yellow-100 transition-colors">
-                  <Database className="h-8 w-8 text-yellow-600 mb-2" />
-                  <span className="text-sm font-medium text-gray-900">Base de données</span>
-                </button>
-                <button className="flex flex-col items-center p-4 bg-red-50 rounded-lg hover:bg-red-100 transition-colors">
-                  <Activity className="h-8 w-8 text-red-600 mb-2" />
-                  <span className="text-sm font-medium text-gray-900">Monitoring</span>
-                </button>
-                <button className="flex flex-col items-center p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-                  <Settings className="h-8 w-8 text-gray-600 mb-2" />
-                  <span className="text-sm font-medium text-gray-900">Configuration</span>
-                </button>
-              </div>
-            </div>
-
-            {/* Chart Placeholder */}
-            <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Utilisation de la plateforme</h3>
-              <div className="h-64 bg-gray-100 rounded-lg flex items-center justify-center">
-                <div className="text-center">
-                  <BarChart3 className="h-12 w-12 text-gray-400 mx-auto mb-2" />
-                  <p className="text-gray-500">Graphiques d'analyse disponibles prochainement</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Sidebar */}
-          <div className="space-y-6">
-            {/* Recent Opticiens */}
-            <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Opticiens récents</h3>
-              <div className="space-y-4">
-                {recentOpticiens.map((opticien, index) => (
-                  <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                    <div>
-                      <p className="font-medium text-gray-900">{opticien.nom}</p>
-                      <p className="text-sm text-gray-500">{opticien.boutique}</p>
-                      <p className="text-xs text-gray-400">Inscrit: {opticien.inscrit}</p>
-                    </div>
-                    <span className={`px-2 py-1 text-xs rounded-full ${
-                      opticien.status === 'Actif' 
-                        ? 'bg-green-100 text-green-800' 
-                        : 'bg-red-100 text-red-800'
-                    }`}>
-                      {opticien.status}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* System Status */}
-            <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">État du système</h3>
-              <div className="space-y-3">
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-600">Serveur</span>
-                  <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">
-                    Opérationnel
-                  </span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-600">Base de données</span>
-                  <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">
-                    Opérationnel
-                  </span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-600">API</span>
-                  <span className="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded-full">
-                    Maintenance
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+        {/* Page Content */}
+        <main className="flex-1 p-4 lg:p-6 overflow-auto">
+          {renderContent()}
+        </main>
       </div>
     </div>
   );
