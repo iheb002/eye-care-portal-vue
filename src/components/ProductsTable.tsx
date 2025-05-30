@@ -1,11 +1,13 @@
 
 import React, { useState } from 'react';
-import { Search, Plus, Eye, Edit, Trash } from 'lucide-react';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Table, TableBody, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import ProductForm from './forms/ProductForm';
+import ProductCard from './products/ProductCard';
+import ProductFilters from './products/ProductFilters';
+import ProductActions from './products/ProductActions';
+import ProductPagination from './products/ProductPagination';
 
 interface Product {
   id: string;
@@ -70,19 +72,6 @@ const ProductsTable = () => {
     return matchesSearch && matchesCategory;
   });
 
-  const getStatusColor = (statut: string) => {
-    switch (statut) {
-      case 'promotion exclusive':
-        return 'bg-purple-100 text-purple-800';
-      case 'standard':
-        return 'bg-gray-100 text-gray-800';
-      case 'nouveau':
-        return 'bg-green-100 text-green-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
-  };
-
   const handleAddProduct = (data: any) => {
     const newProduct: Product = {
       id: Date.now().toString(),
@@ -129,54 +118,30 @@ const ProductsTable = () => {
     });
   };
 
+  const handleEditClick = (product: Product) => {
+    setSelectedProduct(product);
+    setIsEditDialogOpen(true);
+  };
+
   return (
     <div className="bg-white rounded-lg shadow p-4 md:p-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
         <h2 className="text-xl md:text-2xl font-bold text-gray-900">Produits</h2>
-        <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-          <DialogTrigger asChild>
-            <Button className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto">
-              <Plus className="h-4 w-4 mr-2" />
-              Ajouter Produit
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>Ajouter un nouveau produit</DialogTitle>
-            </DialogHeader>
-            <ProductForm
-              onSubmit={handleAddProduct}
-              onCancel={() => setIsAddDialogOpen(false)}
-            />
-          </DialogContent>
-        </Dialog>
+        <ProductActions
+          isAddDialogOpen={isAddDialogOpen}
+          onAddDialogChange={setIsAddDialogOpen}
+          onAddProduct={handleAddProduct}
+        />
       </div>
 
       {/* Search and Filter */}
-      <div className="flex flex-col sm:flex-row items-center gap-4 mb-6">
-        <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-          <input
-            type="text"
-            placeholder="Rechercher un produit ..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          />
-        </div>
-        
-        <select
-          value={selectedCategory}
-          onChange={(e) => setSelectedCategory(e.target.value)}
-          className="w-full sm:w-auto px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-        >
-          <option>Toutes catégories</option>
-          <option>montures solaires</option>
-          <option>verres</option>
-          <option>montures sport</option>
-        </select>
-      </div>
+      <ProductFilters
+        searchTerm={searchTerm}
+        selectedCategory={selectedCategory}
+        onSearchChange={setSearchTerm}
+        onCategoryChange={setSelectedCategory}
+      />
 
       {/* Table */}
       <div className="overflow-x-auto">
@@ -196,77 +161,23 @@ const ProductsTable = () => {
           </TableHeader>
           <TableBody>
             {filteredProducts.map((product) => (
-              <TableRow key={product.id} className="hover:bg-gray-50">
-                <TableCell className="font-medium">
-                  <div>
-                    <div className="font-medium">{product.nom}</div>
-                    <div className="text-sm text-gray-500 md:hidden">{product.categorie}</div>
-                  </div>
-                </TableCell>
-                <TableCell className="hidden lg:table-cell">{product.dateAjout}</TableCell>
-                <TableCell>{product.reference}</TableCell>
-                <TableCell className="hidden md:table-cell">{product.categorie}</TableCell>
-                <TableCell className="hidden lg:table-cell">{product.marque}</TableCell>
-                <TableCell>
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(product.statut)}`}>
-                    {product.statut}
-                  </span>
-                </TableCell>
-                <TableCell>{product.prixUnitaire} DT</TableCell>
-                <TableCell className="hidden xl:table-cell">
-                  {product.remise ? `${product.remise}%` : '-'}
-                </TableCell>
-                <TableCell>
-                  <div className="flex items-center gap-1">
-                    <button 
-                      onClick={() => handleViewProduct(product)}
-                      className="p-1 rounded-full bg-green-100 text-green-600 hover:bg-green-200"
-                      title="Voir"
-                    >
-                      <Eye className="h-4 w-4" />
-                    </button>
-                    <button 
-                      onClick={() => {
-                        setSelectedProduct(product);
-                        setIsEditDialogOpen(true);
-                      }}
-                      className="p-1 rounded-full bg-yellow-100 text-yellow-600 hover:bg-yellow-200"
-                      title="Modifier"
-                    >
-                      <Edit className="h-4 w-4" />
-                    </button>
-                    <button 
-                      onClick={() => handleDeleteProduct(product.id)}
-                      className="p-1 rounded-full bg-red-100 text-red-600 hover:bg-red-200"
-                      title="Supprimer"
-                    >
-                      <Trash className="h-4 w-4" />
-                    </button>
-                  </div>
-                </TableCell>
-              </TableRow>
+              <ProductCard
+                key={product.id}
+                product={product}
+                onView={handleViewProduct}
+                onEdit={handleEditClick}
+                onDelete={handleDeleteProduct}
+              />
             ))}
           </TableBody>
         </Table>
       </div>
 
       {/* Pagination */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-6">
-        <p className="text-sm text-gray-700">
-          Affichage de 1 à {filteredProducts.length} sur {products.length} produits
-        </p>
-        <div className="flex items-center gap-2">
-          <button className="px-3 py-1 border border-gray-300 rounded hover:bg-gray-50">
-            Précédent
-          </button>
-          <button className="px-3 py-1 bg-blue-600 text-white rounded">
-            1
-          </button>
-          <button className="px-3 py-1 border border-gray-300 rounded hover:bg-gray-50">
-            Suivant
-          </button>
-        </div>
-      </div>
+      <ProductPagination
+        currentCount={filteredProducts.length}
+        totalCount={products.length}
+      />
 
       {/* Edit Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
