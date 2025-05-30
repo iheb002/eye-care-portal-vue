@@ -11,32 +11,51 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { useToast } from '@/hooks/use-toast';
 
 const productSchema = z.object({
-  nom: z.string().min(1, 'Le nom du produit est requis'),
+  name: z.string().min(1, 'Le nom du produit est requis'),
   description: z.string().optional(),
-  reference: z.string().min(1, 'Ce champ est obligatoire'),
-  dateAjout: z.string().min(1, 'La date d\'ajout est requise'),
-  categorie: z.string().min(1, 'La catégorie est requise'),
-  marque: z.string().min(1, 'La marque est requise'),
-  prixUnitaire: z.number().min(0, 'Ce champ est obligatoire'),
-  statut: z.enum(['Standard', 'promotion exclusive', 'nouveau']),
-  remise: z.number().min(0).max(100).optional(),
+  price: z.number().min(0, 'Le prix est obligatoire'),
   image: z.any().optional(),
+  stock: z.number().min(0, 'Le stock doit être positif').default(0),
+  category: z.enum(['Montres optique', 'Lentille', 'Verre', 'Monture Solaire']),
+  kind: z.enum(['Accessoire', 'Lentille', 'Lunette']),
+  
+  // Champs pour Accessoire
+  type: z.string().optional(),
+  compatibilite: z.string().optional(),
+  
+  // Champs pour Lentille
+  dioptrie: z.number().optional(),
+  dureeVie: z.string().optional(),
+  couleur: z.string().optional(),
+  
+  // Champs pour Lunette
+  forme: z.string().optional(),
+  matiere: z.string().optional(),
+  genre: z.enum(['Homme', 'Femme', 'Enfant', 'Mixte']).optional(),
+  model3d: z.string().optional(),
 });
 
 type ProductFormData = z.infer<typeof productSchema>;
 
 interface Product {
   id?: string;
-  nom: string;
+  name: string;
   description?: string;
-  dateAjout?: string;
-  reference: string;
-  categorie: string;
-  marque: string;
-  statut: string;
-  prixUnitaire: number;
-  remise?: number;
+  price: number;
   image?: any;
+  stock: number;
+  category: string;
+  kind: string;
+  type?: string;
+  compatibilite?: string;
+  dioptrie?: number;
+  dureeVie?: string;
+  couleur?: string;
+  forme?: string;
+  matiere?: string;
+  genre?: string;
+  model3d?: string;
+  createdAt?: string;
 }
 
 interface ProductFormProps {
@@ -52,22 +71,29 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, onSubmit, onCancel, 
   const form = useForm<ProductFormData>({
     resolver: zodResolver(productSchema),
     defaultValues: {
-      nom: product?.nom || '',
+      name: product?.name || '',
       description: product?.description || '',
-      reference: product?.reference || '',
-      dateAjout: product?.dateAjout || new Date().toISOString().split('T')[0],
-      categorie: product?.categorie || '',
-      marque: product?.marque || '',
-      statut: (product?.statut as 'Standard' | 'promotion exclusive' | 'nouveau') || 'Standard',
-      prixUnitaire: product?.prixUnitaire || 0,
-      remise: product?.remise || 0,
+      price: product?.price || 0,
+      stock: product?.stock || 0,
+      category: product?.category as 'Montres optique' | 'Lentille' | 'Verre' | 'Monture Solaire' || 'Montres optique',
+      kind: product?.kind as 'Accessoire' | 'Lentille' | 'Lunette' || 'Accessoire',
+      type: product?.type || '',
+      compatibilite: product?.compatibilite || '',
+      dioptrie: product?.dioptrie || 0,
+      dureeVie: product?.dureeVie || '',
+      couleur: product?.couleur || '',
+      forme: product?.forme || '',
+      matiere: product?.matiere || '',
+      genre: product?.genre as 'Homme' | 'Femme' | 'Enfant' | 'Mixte' || 'Mixte',
+      model3d: product?.model3d || '',
     },
   });
+
+  const watchedKind = form.watch('kind');
 
   const handleSubmit = async (data: ProductFormData) => {
     try {
       if (product?.id) {
-        // Update existing product
         const response = await fetch(`/api/products/${product.id}`, {
           method: 'PUT',
           headers: {
@@ -88,16 +114,12 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, onSubmit, onCancel, 
           description: 'Le produit a été modifié avec succès.',
         });
       } else {
-        // Create new product
         const response = await fetch('/api/products', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({
-            ...data,
-            dateAjout: new Date().toISOString().split('T')[0],
-          }),
+          body: JSON.stringify(data),
         });
         
         if (!response.ok) {
@@ -127,7 +149,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, onSubmit, onCancel, 
         {/* Nom du Produit */}
         <FormField
           control={form.control}
-          name="nom"
+          name="name"
           render={({ field }) => (
             <FormItem>
               <FormLabel className="text-sm font-medium text-gray-700">Nom du Produit :</FormLabel>
@@ -162,101 +184,14 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, onSubmit, onCancel, 
           )}
         />
 
-        {/* Référence et Date d'Ajout */}
+        {/* Prix et Stock */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormField
             control={form.control}
-            name="reference"
+            name="price"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-sm font-medium text-gray-700">Référence :</FormLabel>
-                <FormControl>
-                  <Input 
-                    {...field} 
-                    disabled={isLoading}
-                    className="w-full border border-gray-300 rounded-md px-3 py-2"
-                  />
-                </FormControl>
-                <FormMessage className="text-red-500 text-sm">
-                  Ce champ est obligatoire.
-                </FormMessage>
-              </FormItem>
-            )}
-          />
-          
-          <FormField
-            control={form.control}
-            name="dateAjout"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-sm font-medium text-gray-700">Date d'Ajout :</FormLabel>
-                <FormControl>
-                  <Input
-                    type="date"
-                    {...field}
-                    disabled={isLoading}
-                    className="w-full border border-gray-300 rounded-md px-3 py-2"
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-
-        {/* Catégorie et Marque */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormField
-            control={form.control}
-            name="categorie"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-sm font-medium text-gray-700">Catégorie :</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isLoading}>
-                  <FormControl>
-                    <SelectTrigger className="w-full border border-gray-300 rounded-md">
-                      <SelectValue placeholder="Montures optiques" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectItem value="Montures optiques">Montures optiques</SelectItem>
-                    <SelectItem value="montures solaires">Montures solaires</SelectItem>
-                    <SelectItem value="verres">Verres</SelectItem>
-                    <SelectItem value="montures sport">Montures sport</SelectItem>
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          
-          <FormField
-            control={form.control}
-            name="marque"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-sm font-medium text-gray-700">Marque :</FormLabel>
-                <FormControl>
-                  <Input 
-                    {...field} 
-                    disabled={isLoading}
-                    className="w-full border border-gray-300 rounded-md px-3 py-2"
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-
-        {/* Prix Unitaire et Statut */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormField
-            control={form.control}
-            name="prixUnitaire"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-sm font-medium text-gray-700">Prix unitaire (DT) :</FormLabel>
+                <FormLabel className="text-sm font-medium text-gray-700">Prix (DT) :</FormLabel>
                 <FormControl>
                   <Input
                     type="number"
@@ -266,29 +201,74 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, onSubmit, onCancel, 
                     className="w-full border border-gray-300 rounded-md px-3 py-2"
                   />
                 </FormControl>
-                <FormMessage className="text-red-500 text-sm">
-                  Ce champ est obligatoire.
-                </FormMessage>
+                <FormMessage />
               </FormItem>
             )}
           />
           
           <FormField
             control={form.control}
-            name="statut"
+            name="stock"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-sm font-medium text-gray-700">Statut :</FormLabel>
+                <FormLabel className="text-sm font-medium text-gray-700">Stock :</FormLabel>
+                <FormControl>
+                  <Input
+                    type="number"
+                    {...field}
+                    onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                    disabled={isLoading}
+                    className="w-full border border-gray-300 rounded-md px-3 py-2"
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        {/* Catégorie et Type */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <FormField
+            control={form.control}
+            name="category"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-sm font-medium text-gray-700">Catégorie :</FormLabel>
                 <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isLoading}>
                   <FormControl>
                     <SelectTrigger className="w-full border border-gray-300 rounded-md">
-                      <SelectValue placeholder="Standard" />
+                      <SelectValue placeholder="Sélectionner une catégorie" />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="Standard">Standard</SelectItem>
-                    <SelectItem value="promotion exclusive">Promotion exclusive</SelectItem>
-                    <SelectItem value="nouveau">Nouveau</SelectItem>
+                    <SelectItem value="Montres optique">Montres optique</SelectItem>
+                    <SelectItem value="Lentille">Lentille</SelectItem>
+                    <SelectItem value="Verre">Verre</SelectItem>
+                    <SelectItem value="Monture Solaire">Monture Solaire</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
+          <FormField
+            control={form.control}
+            name="kind"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-sm font-medium text-gray-700">Type de Produit :</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isLoading}>
+                  <FormControl>
+                    <SelectTrigger className="w-full border border-gray-300 rounded-md">
+                      <SelectValue placeholder="Sélectionner un type" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="Accessoire">Accessoire</SelectItem>
+                    <SelectItem value="Lentille">Lentille</SelectItem>
+                    <SelectItem value="Lunette">Lunette</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />
@@ -297,26 +277,249 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, onSubmit, onCancel, 
           />
         </div>
 
-        {/* Remise */}
-        <FormField
-          control={form.control}
-          name="remise"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel className="text-sm font-medium text-gray-700">Remise (%) :</FormLabel>
-              <FormControl>
-                <Input
-                  type="number"
-                  {...field}
-                  onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
-                  disabled={isLoading}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2"
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        {/* Champs conditionnels selon le type */}
+        {watchedKind === 'Accessoire' && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="type"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm font-medium text-gray-700">Type d'Accessoire :</FormLabel>
+                  <FormControl>
+                    <Input 
+                      {...field} 
+                      disabled={isLoading}
+                      placeholder="ex: Étui, Chiffon, Spray"
+                      className="w-full border border-gray-300 rounded-md px-3 py-2"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="compatibilite"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm font-medium text-gray-700">Compatibilité :</FormLabel>
+                  <FormControl>
+                    <Input 
+                      {...field} 
+                      disabled={isLoading}
+                      placeholder="ex: Tous types, Montures métal"
+                      className="w-full border border-gray-300 rounded-md px-3 py-2"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+        )}
+
+        {watchedKind === 'Lentille' && (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <FormField
+              control={form.control}
+              name="type"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm font-medium text-gray-700">Type de Lentille :</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isLoading}>
+                    <FormControl>
+                      <SelectTrigger className="w-full border border-gray-300 rounded-md">
+                        <SelectValue placeholder="Type" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="souple">Souple</SelectItem>
+                      <SelectItem value="rigide">Rigide</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="dioptrie"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm font-medium text-gray-700">Dioptrie :</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      step="0.25"
+                      {...field}
+                      onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                      disabled={isLoading}
+                      placeholder="ex: -2.5"
+                      className="w-full border border-gray-300 rounded-md px-3 py-2"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="dureeVie"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm font-medium text-gray-700">Durée de Vie :</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isLoading}>
+                    <FormControl>
+                      <SelectTrigger className="w-full border border-gray-300 rounded-md">
+                        <SelectValue placeholder="Durée" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="1 jour">1 jour</SelectItem>
+                      <SelectItem value="1 semaine">1 semaine</SelectItem>
+                      <SelectItem value="1 mois">1 mois</SelectItem>
+                      <SelectItem value="3 mois">3 mois</SelectItem>
+                      <SelectItem value="6 mois">6 mois</SelectItem>
+                      <SelectItem value="1 an">1 an</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+        )}
+
+        {watchedKind === 'Lunette' && (
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="type"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-sm font-medium text-gray-700">Type de Lunette :</FormLabel>
+                    <FormControl>
+                      <Input 
+                        {...field} 
+                        disabled={isLoading}
+                        placeholder="ex: Optique, Solaire, Sport"
+                        className="w-full border border-gray-300 rounded-md px-3 py-2"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="genre"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-sm font-medium text-gray-700">Genre :</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isLoading}>
+                      <FormControl>
+                        <SelectTrigger className="w-full border border-gray-300 rounded-md">
+                          <SelectValue placeholder="Genre" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="Homme">Homme</SelectItem>
+                        <SelectItem value="Femme">Femme</SelectItem>
+                        <SelectItem value="Enfant">Enfant</SelectItem>
+                        <SelectItem value="Mixte">Mixte</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <FormField
+                control={form.control}
+                name="couleur"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-sm font-medium text-gray-700">Couleur :</FormLabel>
+                    <FormControl>
+                      <Input 
+                        {...field} 
+                        disabled={isLoading}
+                        placeholder="ex: Noir, Bleu, Rouge"
+                        className="w-full border border-gray-300 rounded-md px-3 py-2"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="forme"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-sm font-medium text-gray-700">Forme :</FormLabel>
+                    <FormControl>
+                      <Input 
+                        {...field} 
+                        disabled={isLoading}
+                        placeholder="ex: Rectangulaire, Ronde, Aviateur"
+                        className="w-full border border-gray-300 rounded-md px-3 py-2"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="matiere"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-sm font-medium text-gray-700">Matière :</FormLabel>
+                    <FormControl>
+                      <Input 
+                        {...field} 
+                        disabled={isLoading}
+                        placeholder="ex: Métal, Plastique, Titane"
+                        className="w-full border border-gray-300 rounded-md px-3 py-2"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            
+            <FormField
+              control={form.control}
+              name="model3d"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm font-medium text-gray-700">Modèle 3D (URL) :</FormLabel>
+                  <FormControl>
+                    <Input 
+                      {...field} 
+                      disabled={isLoading}
+                      placeholder="URL du modèle 3D"
+                      className="w-full border border-gray-300 rounded-md px-3 py-2"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </>
+        )}
 
         {/* Image du Produit */}
         <FormField
@@ -334,7 +537,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, onSubmit, onCancel, 
                     disabled={isLoading}
                     className="w-full"
                   />
-                  <p className="text-sm text-gray-500 mt-2">Aucun fichier choisi</p>
+                  <p className="text-sm text-gray-500 mt-2">Choisir une image</p>
                 </div>
               </FormControl>
               <FormMessage />
