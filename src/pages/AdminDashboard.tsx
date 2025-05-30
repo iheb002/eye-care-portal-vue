@@ -1,5 +1,7 @@
-
 import React, { useState } from 'react';
+import { useDispatch } from 'react-redux';
+import { logout } from '../store/authSlice';
+import { useNavigate } from 'react-router-dom';
 import { 
   Users, 
   Package, 
@@ -22,6 +24,13 @@ import OrdonnancesTable from '@/components/OrdonnancesTable';
 const AdminDashboard = () => {
   const [activeSection, setActiveSection] = useState('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    dispatch(logout());
+    navigate('/');
+  };
 
   const menuItems = [
     { id: 'dashboard', label: 'Tableau de bord', icon: Home },
@@ -213,7 +222,7 @@ const AdminDashboard = () => {
           <Button
             variant="outline"
             className="w-full flex items-center justify-center bg-transparent border-purple-300 text-purple-200 hover:bg-purple-700 hover:text-white"
-            onClick={() => window.location.href = '/login'}
+            onClick={handleLogout}
           >
             <LogOut className="mr-2 h-4 w-4" />
             Déconnexion
