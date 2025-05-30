@@ -11,14 +11,29 @@ import ProductPagination from './products/ProductPagination';
 
 interface Product {
   id: string;
-  nom: string;
-  dateAjout: string;
-  reference: string;
-  categorie: string;
-  marque: string;
-  statut: string;
-  prixUnitaire: number;
-  remise?: number;
+  name: string;
+  description?: string;
+  price: number;
+  image?: string;
+  stock: number;
+  category: 'Montres optique' | 'Lentille' | 'Verre' | 'Monture Solaire';
+  kind: 'Accessoire' | 'Lentille' | 'Lunette';
+  createdAt: string;
+  
+  // Champs pour Accessoire
+  type?: string;
+  compatibilite?: string;
+  
+  // Champs pour Lentille
+  dioptrie?: number;
+  dureeVie?: string;
+  couleur?: string;
+  
+  // Champs pour Lunette
+  forme?: string;
+  matiere?: string;
+  genre?: 'Homme' | 'Femme' | 'Enfant' | 'Mixte';
+  model3d?: string;
 }
 
 const ProductsTable = () => {
@@ -29,46 +44,54 @@ const ProductsTable = () => {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const { toast } = useToast();
 
-  // Données d'exemple basées sur l'image
+  // Données d'exemple basées sur la nouvelle structure
   const [products, setProducts] = useState<Product[]>([
     {
       id: '1',
-      nom: 'Monture Ray-Ban',
-      dateAjout: '2023-05-15',
-      reference: 'RB001',
-      categorie: 'montures solaires',
-      marque: 'Ray-Ban',
-      statut: 'promotion exclusive',
-      prixUnitaire: 450,
-      remise: 10
+      name: 'Monture Ray-Ban',
+      description: 'Monture élégante pour usage quotidien',
+      price: 450,
+      stock: 25,
+      category: 'Monture Solaire',
+      kind: 'Lunette',
+      type: 'Solaire',
+      couleur: 'Noir',
+      forme: 'Aviateur',
+      matiere: 'Métal',
+      genre: 'Mixte',
+      createdAt: '2023-05-15T00:00:00Z'
     },
     {
       id: '2',
-      nom: 'Verres progressifs Essilor',
-      dateAjout: '2023-06-20',
-      reference: 'ESS123',
-      categorie: 'verres',
-      marque: 'Essilor',
-      statut: 'standard',
-      prixUnitaire: 320
+      name: 'Verres progressifs Essilor',
+      description: 'Verres de haute qualité pour presbytie',
+      price: 320,
+      stock: 15,
+      category: 'Verre',
+      kind: 'Accessoire',
+      type: 'Progressif',
+      compatibilite: 'Toutes montures',
+      createdAt: '2023-06-20T00:00:00Z'
     },
     {
       id: '3',
-      nom: 'Monture Oakley Sport',
-      dateAjout: '2023-07-10',
-      reference: 'OAK456',
-      categorie: 'montures sport',
-      marque: 'Oakley',
-      statut: 'nouveau',
-      prixUnitaire: 280,
-      remise: 5
+      name: 'Lentilles Acuvue',
+      description: 'Lentilles journalières confortables',
+      price: 28,
+      stock: 100,
+      category: 'Lentille',
+      kind: 'Lentille',
+      type: 'souple',
+      dioptrie: -2.5,
+      dureeVie: '1 jour',
+      couleur: 'Transparent',
+      createdAt: '2023-07-10T00:00:00Z'
     }
   ]);
 
   const filteredProducts = products.filter(product => {
-    const matchesSearch = product.nom.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      product.reference.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = selectedCategory === 'Toutes catégories' || product.categorie === selectedCategory;
+    const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory = selectedCategory === 'Toutes catégories' || product.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
 
@@ -76,7 +99,7 @@ const ProductsTable = () => {
     const newProduct: Product = {
       id: Date.now().toString(),
       ...data,
-      dateAjout: new Date().toISOString().split('T')[0],
+      createdAt: new Date().toISOString(),
     };
     setProducts([...products, newProduct]);
     setIsAddDialogOpen(false);
@@ -114,7 +137,7 @@ const ProductsTable = () => {
   const handleViewProduct = (product: Product) => {
     toast({
       title: 'Affichage du produit',
-      description: `${product.nom} - ${product.reference}`,
+      description: `${product.name} - ${product.price} DT`,
     });
   };
 
@@ -149,13 +172,11 @@ const ProductsTable = () => {
           <TableHeader>
             <TableRow className="bg-gray-50">
               <TableHead className="font-semibold whitespace-nowrap">NOM</TableHead>
-              <TableHead className="font-semibold whitespace-nowrap hidden lg:table-cell">DATE D'AJOUT</TableHead>
-              <TableHead className="font-semibold whitespace-nowrap">RÉFÉRENCE</TableHead>
-              <TableHead className="font-semibold whitespace-nowrap hidden md:table-cell">CATÉGORIE</TableHead>
-              <TableHead className="font-semibold whitespace-nowrap hidden lg:table-cell">MARQUE</TableHead>
-              <TableHead className="font-semibold whitespace-nowrap">STATUT</TableHead>
+              <TableHead className="font-semibold whitespace-nowrap hidden lg:table-cell">CATÉGORIE</TableHead>
+              <TableHead className="font-semibold whitespace-nowrap hidden md:table-cell">TYPE</TableHead>
               <TableHead className="font-semibold whitespace-nowrap">PRIX</TableHead>
-              <TableHead className="font-semibold whitespace-nowrap hidden xl:table-cell">REMISE</TableHead>
+              <TableHead className="font-semibold whitespace-nowrap hidden xl:table-cell">STOCK</TableHead>
+              <TableHead className="font-semibold whitespace-nowrap hidden lg:table-cell">DATE</TableHead>
               <TableHead className="font-semibold whitespace-nowrap">ACTIONS</TableHead>
             </TableRow>
           </TableHeader>

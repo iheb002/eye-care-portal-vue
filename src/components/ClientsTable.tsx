@@ -9,13 +9,14 @@ import ClientForm from './forms/ClientForm';
 
 interface Client {
   id: string;
-  nom: string;
-  prenom: string;
+  name: string;
+  surname: string;
   email: string;
-  telephone: string;
-  dateInscription: string;
-  derniereVisite: string;
-  statut: string;
+  phone: string;
+  address?: string;
+  actif: boolean;
+  createdAt: string;
+  updatedAt?: string;
 }
 
 const ClientsTable = () => {
@@ -25,63 +26,63 @@ const ClientsTable = () => {
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
   const { toast } = useToast();
 
-  // Données d'exemple
+  // Données d'exemple avec la nouvelle structure
   const [clients, setClients] = useState<Client[]>([
     {
       id: '1',
-      nom: 'Dupont',
-      prenom: 'Marie',
+      name: 'Dupont',
+      surname: 'Marie',
       email: 'marie.dupont@email.com',
-      telephone: '+33 6 12 34 56 78',
-      dateInscription: '2023-01-15',
-      derniereVisite: '2023-11-20',
-      statut: 'Actif'
+      phone: '+33 6 12 34 56 78',
+      address: '123 Rue de la Paix, Paris',
+      actif: true,
+      createdAt: '2023-01-15T00:00:00Z'
     },
     {
       id: '2',
-      nom: 'Martin',
-      prenom: 'Pierre',
+      name: 'Martin',
+      surname: 'Pierre',
       email: 'pierre.martin@email.com',
-      telephone: '+33 6 98 76 54 32',
-      dateInscription: '2023-03-22',
-      derniereVisite: '2023-11-18',
-      statut: 'Actif'
+      phone: '+33 6 98 76 54 32',
+      address: '456 Avenue des Champs, Lyon',
+      actif: true,
+      createdAt: '2023-03-22T00:00:00Z'
     },
     {
       id: '3',
-      nom: 'Bernard',
-      prenom: 'Sophie',
+      name: 'Bernard',
+      surname: 'Sophie',
       email: 'sophie.bernard@email.com',
-      telephone: '+33 6 45 67 89 01',
-      dateInscription: '2023-02-10',
-      derniereVisite: '2023-09-15',
-      statut: 'Inactif'
+      phone: '+33 6 45 67 89 01',
+      address: '789 Boulevard Central, Marseille',
+      actif: false,
+      createdAt: '2023-02-10T00:00:00Z'
     }
   ]);
 
   const filteredClients = clients.filter(client =>
-    client.nom.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    client.prenom.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    client.surname.toLowerCase().includes(searchTerm.toLowerCase()) ||
     client.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const getStatusColor = (statut: string) => {
-    switch (statut) {
-      case 'Actif':
-        return 'bg-green-100 text-green-800';
-      case 'Inactif':
-        return 'bg-red-100 text-red-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
+  const getStatusColor = (actif: boolean) => {
+    return actif ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800';
+  };
+
+  const getStatusText = (actif: boolean) => {
+    return actif ? 'Actif' : 'Inactif';
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('fr-FR');
   };
 
   const handleAddClient = (data: any) => {
     const newClient: Client = {
       id: Date.now().toString(),
       ...data,
-      dateInscription: new Date().toISOString().split('T')[0],
-      derniereVisite: new Date().toISOString().split('T')[0],
+      createdAt: new Date().toISOString(),
     };
     setClients([...clients, newClient]);
     setIsAddDialogOpen(false);
@@ -94,7 +95,7 @@ const ClientsTable = () => {
   const handleEditClient = (data: any) => {
     if (selectedClient) {
       const updatedClients = clients.map(client =>
-        client.id === selectedClient.id ? { ...client, ...data } : client
+        client.id === selectedClient.id ? { ...client, ...data, updatedAt: new Date().toISOString() } : client
       );
       setClients(updatedClients);
       setIsEditDialogOpen(false);
@@ -119,7 +120,7 @@ const ClientsTable = () => {
   const handleViewClient = (client: Client) => {
     toast({
       title: 'Affichage du client',
-      description: `${client.prenom} ${client.nom} - ${client.email}`,
+      description: `${client.surname} ${client.name} - ${client.email}`,
     });
   };
 
@@ -169,8 +170,8 @@ const ClientsTable = () => {
               <TableHead className="font-semibold whitespace-nowrap">NOM COMPLET</TableHead>
               <TableHead className="font-semibold whitespace-nowrap hidden md:table-cell">EMAIL</TableHead>
               <TableHead className="font-semibold whitespace-nowrap hidden lg:table-cell">TÉLÉPHONE</TableHead>
+              <TableHead className="font-semibold whitespace-nowrap hidden xl:table-cell">ADRESSE</TableHead>
               <TableHead className="font-semibold whitespace-nowrap hidden xl:table-cell">DATE D'INSCRIPTION</TableHead>
-              <TableHead className="font-semibold whitespace-nowrap hidden xl:table-cell">DERNIÈRE VISITE</TableHead>
               <TableHead className="font-semibold whitespace-nowrap">STATUT</TableHead>
               <TableHead className="font-semibold whitespace-nowrap">ACTIONS</TableHead>
             </TableRow>
@@ -180,17 +181,17 @@ const ClientsTable = () => {
               <TableRow key={client.id} className="hover:bg-gray-50">
                 <TableCell className="font-medium">
                   <div>
-                    <div className="font-medium">{client.prenom} {client.nom}</div>
+                    <div className="font-medium">{client.surname} {client.name}</div>
                     <div className="text-sm text-gray-500 md:hidden">{client.email}</div>
                   </div>
                 </TableCell>
                 <TableCell className="hidden md:table-cell">{client.email}</TableCell>
-                <TableCell className="hidden lg:table-cell">{client.telephone}</TableCell>
-                <TableCell className="hidden xl:table-cell">{client.dateInscription}</TableCell>
-                <TableCell className="hidden xl:table-cell">{client.derniereVisite}</TableCell>
+                <TableCell className="hidden lg:table-cell">{client.phone}</TableCell>
+                <TableCell className="hidden xl:table-cell">{client.address || '-'}</TableCell>
+                <TableCell className="hidden xl:table-cell">{formatDate(client.createdAt)}</TableCell>
                 <TableCell>
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(client.statut)}`}>
-                    {client.statut}
+                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(client.actif)}`}>
+                    {getStatusText(client.actif)}
                   </span>
                 </TableCell>
                 <TableCell>
