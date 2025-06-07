@@ -9,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
+import { Product } from '@/types/product';
 
 const productSchema = z.object({
   name: z.string().min(1, 'Le nom du produit est requis'),
@@ -37,27 +38,6 @@ const productSchema = z.object({
 
 type ProductFormData = z.infer<typeof productSchema>;
 
-interface Product {
-  id?: string;
-  name: string;
-  description?: string;
-  price: number;
-  image?: any;
-  stock: number;
-  category: string;
-  kind: string;
-  type?: string;
-  compatibilite?: string;
-  dioptrie?: number;
-  dureeVie?: string;
-  couleur?: string;
-  forme?: string;
-  matiere?: string;
-  genre?: string;
-  model3d?: string;
-  createdAt?: string;
-}
-
 interface ProductFormProps {
   product?: Product;
   onSubmit: (data: ProductFormData) => void;
@@ -75,17 +55,17 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, onSubmit, onCancel, 
       description: product?.description || '',
       price: product?.price || 0,
       stock: product?.stock || 0,
-      category: product?.category as 'Montres optique' | 'Lentille' | 'Verre' | 'Monture Solaire' || 'Montres optique',
-      kind: product?.kind as 'Accessoire' | 'Lentille' | 'Lunette' || 'Accessoire',
+      category: product?.category || 'Montres optique',
+      kind: product?.kind || 'Accessoire',
       type: product?.type || '',
-      compatibilite: product?.compatibilite || '',
-      dioptrie: product?.dioptrie || 0,
-      dureeVie: product?.dureeVie || '',
+      compatibilite: 'compatibilite' in product ? product.compatibilite : '',
+      dioptrie: 'dioptrie' in product ? product.dioptrie : 0,
+      dureeVie: 'dureeVie' in product ? product.dureeVie : '',
       couleur: product?.couleur || '',
-      forme: product?.forme || '',
-      matiere: product?.matiere || '',
-      genre: product?.genre as 'Homme' | 'Femme' | 'Enfant' | 'Mixte' || 'Mixte',
-      model3d: product?.model3d || '',
+      forme: 'forme' in product ? product.forme : '',
+      matiere: 'matiere' in product ? product.matiere : '',
+      genre: 'genre' in product ? product.genre : 'Mixte',
+      model3d: 'model3d' in product ? product.model3d : '',
     },
   });
 
@@ -93,47 +73,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, onSubmit, onCancel, 
 
   const handleSubmit = async (data: ProductFormData) => {
     try {
-      if (product?.id) {
-        const response = await fetch(`/api/products/${product.id}`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(data),
-        });
-        
-        if (!response.ok) {
-          throw new Error('Erreur lors de la modification du produit');
-        }
-        
-        const updatedProduct = await response.json();
-        onSubmit(updatedProduct);
-        
-        toast({
-          title: 'Produit modifié',
-          description: 'Le produit a été modifié avec succès.',
-        });
-      } else {
-        const response = await fetch('/api/products', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(data),
-        });
-        
-        if (!response.ok) {
-          throw new Error('Erreur lors de la création du produit');
-        }
-        
-        const newProduct = await response.json();
-        onSubmit(newProduct);
-        
-        toast({
-          title: 'Produit ajouté',
-          description: 'Le produit a été ajouté avec succès.',
-        });
-      }
+      onSubmit(data);
     } catch (error) {
       toast({
         title: 'Erreur',
@@ -277,7 +217,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, onSubmit, onCancel, 
           />
         </div>
 
-        {/* Champs conditionnels selon le type */}
+        {/* Champs conditionnels selon le type (discriminator) */}
         {watchedKind === 'Accessoire' && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <FormField
@@ -309,7 +249,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, onSubmit, onCancel, 
                     <Input 
                       {...field} 
                       disabled={isLoading}
-                      placeholder="ex: Tous types, Montures métal"
+                      placeholder="ex: Tous types, Montures métal, Lentilles"
                       className="w-full border border-gray-300 rounded-md px-3 py-2"
                     />
                   </FormControl>
@@ -321,13 +261,13 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, onSubmit, onCancel, 
         )}
 
         {watchedKind === 'Lentille' && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <FormField
               control={form.control}
               name="type"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-sm font-medium text-gray-700">Type de Lentille :</FormLabel>
+                  <FormLabel className="text-sm font-medium text-gray-700">Type :</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isLoading}>
                     <FormControl>
                       <SelectTrigger className="w-full border border-gray-300 rounded-md">
@@ -387,6 +327,25 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, onSubmit, onCancel, 
                       <SelectItem value="1 an">1 an</SelectItem>
                     </SelectContent>
                   </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="couleur"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm font-medium text-gray-700">Couleur :</FormLabel>
+                  <FormControl>
+                    <Input 
+                      {...field} 
+                      disabled={isLoading}
+                      placeholder="ex: bleu, vert"
+                      className="w-full border border-gray-300 rounded-md px-3 py-2"
+                    />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}

@@ -2,33 +2,7 @@
 import React from 'react';
 import { Eye, Edit, Trash } from 'lucide-react';
 import { TableRow, TableCell } from '@/components/ui/table';
-
-interface Product {
-  id: string;
-  name: string;
-  description?: string;
-  price: number;
-  image?: string;
-  stock: number;
-  category: 'Montres optique' | 'Lentille' | 'Verre' | 'Monture Solaire';
-  kind: 'Accessoire' | 'Lentille' | 'Lunette';
-  createdAt: string;
-  
-  // Champs pour Accessoire
-  type?: string;
-  compatibilite?: string;
-  
-  // Champs pour Lentille
-  dioptrie?: number;
-  dureeVie?: string;
-  couleur?: string;
-  
-  // Champs pour Lunette
-  forme?: string;
-  matiere?: string;
-  genre?: 'Homme' | 'Femme' | 'Enfant' | 'Mixte';
-  model3d?: string;
-}
+import { Product } from '@/types/product';
 
 interface ProductCardProps {
   product: Product;

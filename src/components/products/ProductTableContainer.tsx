@@ -1,34 +1,13 @@
-
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { useProductsApi } from '@/hooks/useApi';
+import { Product } from '@/types/product';
 import ProductForm from '../forms/ProductForm';
 import ProductTableView from './ProductTableView';
 import TableHeader from '../shared/TableHeader';
 import SearchBar from '../shared/SearchBar';
 import ProductFilters from './ProductFilters';
-
-interface Product {
-  id: string;
-  name: string;
-  description?: string;
-  price: number;
-  image?: string;
-  stock: number;
-  category: 'Montres optique' | 'Lentille' | 'Verre' | 'Monture Solaire';
-  kind: 'Accessoire' | 'Lentille' | 'Lunette';
-  createdAt: string;
-  type?: string;
-  compatibilite?: string;
-  dioptrie?: number;
-  dureeVie?: string;
-  couleur?: string;
-  forme?: string;
-  matiere?: string;
-  genre?: 'Homme' | 'Femme' | 'Enfant' | 'Mixte';
-  model3d?: string;
-}
 
 const ProductTableContainer = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -48,7 +27,7 @@ const ProductTableContainer = () => {
         setProducts(data);
       } catch (error) {
         console.error('Failed to load products:', error);
-        // Fallback data
+        // Fallback data matching the new schema
         setProducts([
           {
             id: '1',
@@ -58,6 +37,7 @@ const ProductTableContainer = () => {
             stock: 25,
             category: 'Monture Solaire',
             kind: 'Lunette',
+            opticienId: 'opticien1',
             type: 'Solaire',
             couleur: 'Noir',
             forme: 'Aviateur',
@@ -73,6 +53,7 @@ const ProductTableContainer = () => {
             stock: 15,
             category: 'Verre',
             kind: 'Accessoire',
+            opticienId: 'opticien1',
             type: 'Progressif',
             compatibilite: 'Toutes montures',
             createdAt: '2023-06-20T00:00:00Z'
@@ -85,6 +66,7 @@ const ProductTableContainer = () => {
             stock: 100,
             category: 'Lentille',
             kind: 'Lentille',
+            opticienId: 'opticien1',
             type: 'souple',
             dioptrie: -2.5,
             dureeVie: '1 jour',
@@ -118,6 +100,7 @@ const ProductTableContainer = () => {
       console.error('Failed to add product:', error);
       const newProduct: Product = {
         id: Date.now().toString(),
+        opticienId: 'current-opticien', // This should come from auth state
         ...data,
         createdAt: new Date().toISOString(),
       };

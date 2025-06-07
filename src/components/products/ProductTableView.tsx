@@ -3,27 +3,7 @@ import React from 'react';
 import { Table, TableBody, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import ProductCard from './ProductCard';
 import TablePagination from '../shared/TablePagination';
-
-interface Product {
-  id: string;
-  name: string;
-  description?: string;
-  price: number;
-  image?: string;
-  stock: number;
-  category: 'Montres optique' | 'Lentille' | 'Verre' | 'Monture Solaire';
-  kind: 'Accessoire' | 'Lentille' | 'Lunette';
-  createdAt: string;
-  type?: string;
-  compatibilite?: string;
-  dioptrie?: number;
-  dureeVie?: string;
-  couleur?: string;
-  forme?: string;
-  matiere?: string;
-  genre?: 'Homme' | 'Femme' | 'Enfant' | 'Mixte';
-  model3d?: string;
-}
+import { Product } from '@/types/product';
 
 interface ProductTableViewProps {
   products: Product[];
