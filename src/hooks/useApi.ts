@@ -1,4 +1,3 @@
-
 import { useState, useCallback } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useSelector } from 'react-redux';
@@ -184,6 +183,30 @@ export const useOrdonnancesApi = () => {
     createOrdonnance,
     updateOrdonnance,
     deleteOrdonnance,
+    loading,
+  };
+};
+
+// Chatbot API
+export const useChatbotApi = () => {
+  const { request, loading } = useApi();
+
+  const sendMessage = useCallback(async (message: string) => {
+    console.log('Sending message to chatbot API:', message);
+    return await request('/api/chatbot/message', {
+      method: 'POST',
+      body: JSON.stringify({ message }),
+    });
+  }, [request]);
+
+  const getChatHistory = useCallback(async () => {
+    console.log('Fetching chat history from API...');
+    return await request('/api/chatbot/history');
+  }, [request]);
+
+  return {
+    sendMessage,
+    getChatHistory,
     loading,
   };
 };

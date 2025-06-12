@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { useApi } from '@/hooks/useApi';
+import { useToast } from '@/hooks/use-toast';
 
 interface Message {
   id: string;
@@ -30,6 +32,8 @@ const ChatBot: React.FC<ChatBotProps> = ({ position = 'bottom-right' }) => {
   const [inputMessage, setInputMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const { request, loading } = useApi();
+  const { toast } = useToast();
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -39,42 +43,28 @@ const ChatBot: React.FC<ChatBotProps> = ({ position = 'bottom-right' }) => {
     scrollToBottom();
   }, [messages]);
 
-  const getBotResponse = (userMessage: string): string => {
-    const message = userMessage.toLowerCase();
-    
-    if (message.includes('bonjour') || message.includes('salut') || message.includes('hello')) {
-      return 'Bonjour ! Comment puis-je vous aider avec vos besoins en optique ?';
+  const sendMessageToBackend = async (message: string): Promise<string> => {
+    try {
+      console.log('Sending message to chatbot API:', message);
+      const response = await request('/api/chatbot/message', {
+        method: 'POST',
+        body: JSON.stringify({ message }),
+      });
+      console.log('Received chatbot response:', response);
+      return response.reply || 'Je suis désolé, je n\'ai pas pu traiter votre demande.';
+    } catch (error) {
+      console.error('Chatbot API error:', error);
+      toast({
+        title: 'Erreur de connexion',
+        description: 'Impossible de contacter le chatbot. Veuillez réessayer.',
+        variant: 'destructive',
+      });
+      return 'Je suis désolé, une erreur s\'est produite. Veuillez réessayer plus tard.';
     }
-    
-    if (message.includes('prix') || message.includes('tarif') || message.includes('coût')) {
-      return 'Nos prix varient selon les produits. Voulez-vous des informations sur les montures, verres, ou lentilles ?';
-    }
-    
-    if (message.includes('rendez-vous') || message.includes('rdv') || message.includes('appointment')) {
-      return 'Pour prendre rendez-vous, vous pouvez nous contacter au +33 1 23 45 67 89 ou utiliser notre système de réservation en ligne.';
-    }
-    
-    if (message.includes('lentille') || message.includes('contact')) {
-      return 'Nous proposons différents types de lentilles : journalières, mensuelles, et annuelles. Avez-vous une prescription spécifique ?';
-    }
-    
-    if (message.includes('monture') || message.includes('lunette')) {
-      return 'Nous avons une large gamme de montures pour tous les styles : classique, moderne, sport. Quel type vous intéresse ?';
-    }
-    
-    if (message.includes('merci') || message.includes('thank')) {
-      return 'Je vous en prie ! N\'hésitez pas si vous avez d\'autres questions.';
-    }
-    
-    if (message.includes('aide') || message.includes('help')) {
-      return 'Je peux vous aider avec : les prix, prendre rendez-vous, informations sur les produits, et bien plus. Que souhaitez-vous savoir ?';
-    }
-    
-    return 'Je comprends votre question. Pour des informations plus détaillées, n\'hésitez pas à contacter notre équipe au +33 1 23 45 67 89.';
   };
 
   const handleSendMessage = async () => {
-    if (!inputMessage.trim()) return;
+    if (!inputMessage.trim() || loading) return;
 
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -84,25 +74,30 @@ const ChatBot: React.FC<ChatBotProps> = ({ position = 'bottom-right' }) => {
     };
 
     setMessages(prev => [...prev, userMessage]);
+    const currentMessage = inputMessage;
     setInputMessage('');
     setIsTyping(true);
 
-    // Simulate bot typing delay
-    setTimeout(() => {
+    try {
+      const botResponseText = await sendMessageToBackend(currentMessage);
+      
       const botResponse: Message = {
         id: (Date.now() + 1).toString(),
-        text: getBotResponse(inputMessage),
+        text: botResponseText,
         sender: 'bot',
         timestamp: new Date(),
       };
 
       setMessages(prev => [...prev, botResponse]);
+    } catch (error) {
+      console.error('Error in handleSendMessage:', error);
+    } finally {
       setIsTyping(false);
-    }, 1000 + Math.random() * 1000);
+    }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
+    if (e.key === 'Enter' && !loading) {
       handleSendMessage();
     }
   };
@@ -194,10 +189,11 @@ const ChatBot: React.FC<ChatBotProps> = ({ position = 'bottom-right' }) => {
                   onChange={(e) => setInputMessage(e.target.value)}
                   onKeyPress={handleKeyPress}
                   className="flex-1"
+                  disabled={loading}
                 />
                 <Button 
                   onClick={handleSendMessage}
-                  disabled={!inputMessage.trim()}
+                  disabled={!inputMessage.trim() || loading}
                   size="sm"
                   className="bg-blue-600 hover:bg-blue-700"
                 >
